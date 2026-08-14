@@ -9,7 +9,7 @@ import { withSupabase } from "@supabase/server";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const ADMIN_EMAIL = "Abidaltsale@gmail.com";
 const FROM_ADDRESS = "Royal Abidal Guesthouse <enquiries@royalabidal.com>";
-const LOGO_URL = "https://royalabidal-guesthouse.onrender.com/royaladidal_logo.jpeg";
+const LOGO_URL = "https://royalabidal.com/royaladidal_logo.jpeg";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
