@@ -61,12 +61,23 @@ export default {
         ADMIN_EMAIL,
         `New enquiry from ${name}`,
         `
-          <h2>New Booking Enquiry</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Phone:</strong> ${phone}</p>
-          <p><strong>Email:</strong> ${email || "Not provided"}</p>
-          <p><strong>Preferred Location:</strong> ${location || "No preference"}</p>
-          <p><strong>Message:</strong> ${message || "No additional details provided."}</p>
+          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+            <div style="background: #241d16; padding: 24px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h2 style="color: #fffdf8; margin: 0 0 14px; font-size: 20px;">New Booking Enquiry</h2>
+              <img src="${LOGO_URL}" alt="Royal Abidal Guesthouse" style="max-width: 120px; height: auto;">
+            </div>
+            <div style="background: #f7f1e3; padding: 24px; border-radius: 0 0 8px 8px;">
+              <p style="margin: 0 0 10px;"><strong>Name:</strong> ${name}</p>
+              <p style="margin: 0 0 10px;"><strong>Phone:</strong> <a href="tel:${phone}" style="color:#8c631c;">${phone}</a></p>
+              <p style="margin: 0 0 10px;"><strong>Email:</strong> ${email || "Not provided"}</p>
+              <p style="margin: 0 0 10px;"><strong>Preferred Location:</strong> ${location || "No preference"}</p>
+              <p style="margin: 0 0 20px;"><strong>Message:</strong> ${message || "No additional details provided."}</p>
+              <a href="https://wa.me/27${phone.replace(/^0/, "").replace(/\D/g, "")}"
+                 style="display:inline-block; background:#b6842e; color:#fffdf8; text-decoration:none; padding:10px 18px; border-radius:24px; font-weight:bold; font-size:14px;">
+                Reply on WhatsApp
+              </a>
+            </div>
+          </div>
         `
       );
 
