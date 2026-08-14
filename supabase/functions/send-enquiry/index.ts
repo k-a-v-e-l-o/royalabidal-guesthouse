@@ -71,23 +71,31 @@ export default {
         `
       );
 
-      // 2. Send a welcome/confirmation email to the guest, only if they left an email
+      // 2. Send a welcome/confirmation email to the guest, only if they left an email.
+      // Resend's shared testing domain can only deliver to the account's own verified
+      // email until a real domain is purchased and verified, so this is wrapped in its
+      // own try/catch — a failure here should NOT fail the whole enquiry submission.
       if (email) {
-        await sendEmail(
-          email,
-          "We've received your enquiry — Royal Abidal Guesthouse",
-          `
-            <div style="text-align:center; margin-bottom: 20px;">
-              <img src="${LOGO_URL}" alt="Royal Abidal Guesthouse" style="max-width: 160px; height: auto;">
-            </div>
-            <h2>Hi ${name}, thanks for reaching out!</h2>
-            <p>We've received your enquiry for <strong>${location || "one of our locations"}</strong> and will get back to you shortly to confirm availability.</p>
-            <p>If it's urgent, feel free to message us directly on WhatsApp at
-              <a href="https://wa.me/27649112644">+27 64 911 2644</a>.
-            </p>
-            <p>Warm regards,<br>Royal Abidal Guesthouse</p>
-          `
-        );
+        try {
+          await sendEmail(
+            email,
+            "We've received your enquiry — Royal Abidal Guesthouse",
+            `
+              <div style="text-align:center; margin-bottom: 20px;">
+                <img src="${LOGO_URL}" alt="Royal Abidal Guesthouse" style="max-width: 160px; height: auto;">
+              </div>
+              <h2>Hi ${name}, thanks for reaching out!</h2>
+              <p>We've received your enquiry for <strong>${location || "one of our locations"}</strong> and will get back to you shortly to confirm availability.</p>
+              <p>If it's urgent, feel free to message us directly on WhatsApp at
+                <a href="https://wa.me/27649112644">+27 64 911 2644</a>.
+              </p>
+              <p>Warm regards,<br>Royal Abidal Guesthouse</p>
+            `
+          );
+        } catch (guestEmailErr) {
+          console.error("Guest confirmation email failed (expected until domain is verified):", guestEmailErr);
+          // Don't rethrow — the enquiry itself still succeeded via the admin email above.
+        }
       }
 
       return Response.json({ success: true });
