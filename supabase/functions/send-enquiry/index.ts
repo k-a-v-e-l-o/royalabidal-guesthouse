@@ -6,31 +6,98 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "@supabase/server";
 
-console.log("Hello from Functions!");
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const ADMIN_EMAIL = "Abidaltsale@gmail.com";
+// Using Resend's shared testing domain until the real domain is purchased and verified.
+const FROM_ADDRESS = "Royal Abidal Guesthouse <onboarding@resend.dev>";
+const LOGO_URL = "https://royalabidal-guesthouse.onrender.com/royaladidal_logo.jpeg";
 
-// This endpoint uses 'publishable' | 'secret' access, apiKey is required.
-// Use publishable for Client-facing, key-validated endpoints
-// Use secret for Server-to-server, internal calls
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+async function sendEmail(to: string, subject: string, html: string) {
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: FROM_ADDRESS,
+      to,
+      subject,
+      html,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Resend error (${res.status}): ${errText}`);
+  }
+
+  return res.json();
+}
+
 export default {
   fetch: withSupabase({ auth: ["publishable", "secret"] }, async (req, ctx) => {
-    // Called by another service with a secret key
-    // ctx.supabaseAdmin bypasses RLS — use for privileged operations
-    /*
-    if (ctx.authMode === "secret") {
-      const { user_id } = await req.json();
-      const { data } = await ctx.supabaseAdmin.auth.admin.getUserById(user_id);
-
-      return Response.json({
-        email: data?.user?.email,
-      });
+    if (req.method === "OPTIONS") {
+      return new Response("ok", { headers: corsHeaders });
     }
-    */
 
-    const { name } = await req.json();
+    try {
+      const { name, phone, email, location, message } = await req.json();
 
-    return Response.json({
-      message: `Hello ${name}!`,
-    });
+      if (!name || !phone) {
+        return new Response(
+          JSON.stringify({ error: "Name and phone are required." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // 1. Notify the guesthouse owner of the new enquiry
+      await sendEmail(
+        ADMIN_EMAIL,
+        `New enquiry from ${name}`,
+        `
+          <h2>New Booking Enquiry</h2>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Phone:</strong> ${phone}</p>
+          <p><strong>Email:</strong> ${email || "Not provided"}</p>
+          <p><strong>Preferred Location:</strong> ${location || "No preference"}</p>
+          <p><strong>Message:</strong> ${message || "No additional details provided."}</p>
+        `
+      );
+
+      // 2. Send a welcome/confirmation email to the guest, only if they left an email
+      if (email) {
+        await sendEmail(
+          email,
+          "We've received your enquiry — Royal Abidal Guesthouse",
+          `
+            <div style="text-align:center; margin-bottom: 20px;">
+              <img src="${LOGO_URL}" alt="Royal Abidal Guesthouse" style="max-width: 160px; height: auto;">
+            </div>
+            <h2>Hi ${name}, thanks for reaching out!</h2>
+            <p>We've received your enquiry for <strong>${location || "one of our locations"}</strong> and will get back to you shortly to confirm availability.</p>
+            <p>If it's urgent, feel free to message us directly on WhatsApp at
+              <a href="https://wa.me/27649112644">+27 64 911 2644</a>.
+            </p>
+            <p>Warm regards,<br>Royal Abidal Guesthouse</p>
+          `
+        );
+      }
+
+      return Response.json({ success: true });
+    } catch (err) {
+      console.error("send-enquiry error:", err);
+      return new Response(
+        JSON.stringify({ error: "Failed to process enquiry." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
   }),
 };
 
@@ -41,6 +108,6 @@ export default {
 
   curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/send-enquiry' \
     --header 'apiKey: sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH' \
-    --data '{"name":"Functions"}'
+    --data '{"name":"Test","phone":"0821234567","email":"you@example.com","location":"Ighina Street","message":"Testing"}'
 
 */
