@@ -393,19 +393,10 @@
      guest an automatic welcome/confirmation email back.
      No server needed. Setup steps are in the reply above.
      ============================================================ -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
 (function () {
-  // ====== 1) Paste your own EmailJS values here ======
-  var EMAILJS_PUBLIC_KEY        = "YOUR_PUBLIC_KEY";
-  var EMAILJS_SERVICE_ID        = "YOUR_SERVICE_ID";
-  var EMAILJS_OWNER_TEMPLATE_ID = "YOUR_OWNER_TEMPLATE_ID"; // emails Abidaltsale@gmail.com
-  var EMAILJS_GUEST_TEMPLATE_ID = "YOUR_GUEST_TEMPLATE_ID"; // welcome email to the guest
-  // =====================================================
-
-  if (window.emailjs && EMAILJS_PUBLIC_KEY !== "YOUR_PUBLIC_KEY") {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-  }
+  var SUPABASE_FUNCTION_URL = "https://YOUR_PROJECT_REF.supabase.co/functions/v1/send-enquiry";
+  var ADMIN_EMAIL = "Abidaltsale@gmail.com";
 
   var form = document.getElementById("enquiryForm");
   if (!form) return;
@@ -430,9 +421,18 @@
       return;
     }
 
-    if (!window.emailjs || EMAILJS_PUBLIC_KEY === "YOUR_PUBLIC_KEY") {
-      statusEl.textContent = "Booking form isn't connected yet — please message us on WhatsApp instead.";
-      statusEl.className = "form-status error";
+    if (!data.email) {
+      var subject = encodeURIComponent("Enquiry from " + data.name);
+      var body = encodeURIComponent(
+        "Name: " + data.name + "\n" +
+        "Phone: " + data.phone + "\n" +
+        "Preferred location: " + data.location + "\n" +
+        "Message: " + data.message
+      );
+      window.location.href = "mailto:" + ADMIN_EMAIL + "?subject=" + subject + "&body=" + body;
+      statusEl.textContent = "Opening your email app — press send to complete your enquiry.";
+      statusEl.className = "form-status success";
+      form.reset();
       return;
     }
 
@@ -441,23 +441,22 @@
     statusEl.textContent = "";
     statusEl.className = "form-status";
 
-    // 1) Always tell the guesthouse about the enquiry
-    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_OWNER_TEMPLATE_ID, data)
-      .then(function () {
-        // 2) Only welcome the guest by email if they gave one
-        if (data.email) {
-          return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_GUEST_TEMPLATE_ID, data);
-        }
+    fetch(SUPABASE_FUNCTION_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error("Request failed");
+        return res.json();
       })
       .then(function () {
-        statusEl.textContent = data.email
-          ? "Thanks! We've received your enquiry and sent a welcome email to " + data.email + "."
-          : "Thanks! We've received your enquiry — we'll reach out on WhatsApp or by phone.";
+        statusEl.textContent = "Thanks! We've received your enquiry and sent a welcome email to " + data.email + ".";
         statusEl.className = "form-status success";
         form.reset();
       })
       .catch(function (err) {
-        console.error("EmailJS error:", err);
+        console.error("Enquiry error:", err);
         statusEl.textContent = "Something went wrong sending that — please try WhatsApp instead.";
         statusEl.className = "form-status error";
       })
