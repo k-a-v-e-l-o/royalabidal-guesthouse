@@ -111,8 +111,8 @@ window.addEventListener('scroll', () => $('#backToTop').classList.toggle('show',
 
 // Enquiry form (Supabase edge function, same as before)
 (function () {
-  const FN_URL = 'https://nqnnxmllftmpavobymjo.supabase.co/functions/v1/send-enquiry';
-  const KEY = 'sb_publishable_H0oT8EKItI3fL7dSlze6VA_oLfEzgH3';
+  const FN_URL = 'https://loohupnjgrcdqnylolgf.supabase.co/functions/v1/send-enquiry';
+  const KEY = 'sb_publishable_Q-IO9oee02DiVDIU7biYSA_yaAz-jeK';
   const ADMIN = 'Abidaltsale@gmail.com';
   const form = $('#enquiryForm'), status = $('#formStatus'), btn = $('#enquirySubmitBtn');
   const say = (t, c) => { status.textContent = t; status.className = 'status ' + (c || ''); };
