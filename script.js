@@ -54,16 +54,6 @@ const reveal = new IntersectionObserver(es => es.forEach(en => {
 }), { threshold: .12 });
 [...grid.children].forEach(t => reveal.observe(t));
 
-// "View" bubble that follows the cursor over the tiles
-const bub = document.createElement('div');
-bub.className = 'bub'; bub.textContent = 'View';
-document.body.append(bub);
-grid.addEventListener('mousemove', e => {
-  bub.style.left = e.clientX + 'px'; bub.style.top = e.clientY + 'px';
-  bub.classList.toggle('on', !!e.target.closest('.g'));
-});
-grid.addEventListener('mouseleave', () => bub.classList.remove('on'));
-
 // Lightbox: the photo grows out of its tile, slides between photos, shrinks back on close
 const lb = $('#lightbox'), lbImg = $('#lightboxImg'), lbCount = $('#lightboxCounter'), thumbs = $('#lightboxThumbs');
 let cur = 0;
@@ -93,7 +83,6 @@ function openLightbox(i) {
   }
   lb.classList.add('open');
   document.body.style.overflow = 'hidden';
-  bub.classList.remove('on');
   render(0, grid.children[i].querySelector('img'));
 }
 function closeLightbox() {

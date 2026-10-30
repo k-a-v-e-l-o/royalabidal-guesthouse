@@ -87,9 +87,7 @@ nav{position:sticky;top:0;z-index:50;background:rgba(255,253,248,.94);backdrop-f
 .g{overflow:hidden;cursor:pointer;border-radius:3px;background:var(--sand);opacity:0;transform:translateY(30px);transition:opacity .7s,transform .7s,filter .35s}
 .g.in{opacity:1;transform:none}
 @media(hover:hover){.grid:hover .g{filter:saturate(.55) brightness(.82)}.grid .g:hover{filter:none}}
-.bub{position:fixed;left:0;top:0;width:88px;height:88px;margin:-44px 0 0 -44px;border-radius:50%;background:var(--gold);color:var(--white);display:flex;align-items:center;justify-content:center;font:600 .88rem var(--sans);pointer-events:none;transform:scale(0);transition:transform .25s;z-index:60}
-.bub.on{transform:scale(1)}
-@media(hover:none){.bub{display:none}}
+
 .g.big{grid-column:span 2;grid-row:span 2}.g.wide{grid-column:span 2}
 .g img{width:100%;height:100%;object-fit:cover;opacity:0;transition:transform .5s,opacity .5s}
 .g img.on{opacity:1}.g:hover img{transform:scale(1.06)}
