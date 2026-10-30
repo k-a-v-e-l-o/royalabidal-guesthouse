@@ -139,9 +139,9 @@ window.addEventListener('scroll', () => $('#backToTop').classList.toggle('show',
       headers: { 'Content-Type': 'application/json', apikey: KEY, Authorization: 'Bearer ' + KEY },
       body: JSON.stringify(d)
     })
-      .then(r => { if (!r.ok) throw new Error('Request failed'); return r.json(); })
+      .then(r => r.text().then(t => { if (!r.ok) { console.error('send-enquiry response:', r.status, t); throw new Error(r.status); } }))
       .then(() => { say("Thanks! We've received your enquiry. Please check your email.", 'success'); form.reset(); })
-      .catch(err => { console.error('Enquiry error:', err); say('Something went wrong. Please try WhatsApp instead.', 'error'); })
+      .catch(err => { console.error('Enquiry error:', err); say('Something went wrong (' + err.message + '). Please try WhatsApp instead.', 'error'); })
       .finally(() => { btn.disabled = false; btn.textContent = 'Send enquiry'; });
   });
 })();
